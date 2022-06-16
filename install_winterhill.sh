@@ -104,7 +104,7 @@ mkdir build
 cd /home/pi/libwebsockets/build/
 cmake -DLWS_WITH_SSL=0 ..
 make
-make install
+sudo make install
 
 echo "-------------------------------------------"
 echo "---- Download the WinterHill Software -----"

@@ -105,6 +105,7 @@ cd /home/pi/libwebsockets/build/
 cmake -DLWS_WITH_SSL=0 ..
 make
 sudo make install
+sudo ldconfig
 
 echo "-------------------------------------------"
 echo "---- Download the WinterHill Software -----"

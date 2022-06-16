@@ -98,11 +98,11 @@ echo "---- Download & Install Dependencies for WinterHill Software ------"
 echo "-------------------------------------------------------------------"
 echo
 git clone https://github.com/warmcat/libwebsockets.git
+cd /home/pi/libwebsockets/
 git checkout 2445793d15af39fac9ce527bb28ffd42a974bf4f
-cd libwebsockets/
 mkdir build
-cd build/
-cmake ..
+cd /home/pi/libwebsockets/build/
+cmake -DLWS_WITH_SSL=0 ..
 make
 make install
 

@@ -37,6 +37,7 @@
 #include <netdb.h>
 #include <ifaddrs.h>
 #include <time.h>
+#include "web/web.h"
 
 #define CR		13
 #define LF		10
@@ -79,246 +80,7 @@
     9964    OUT         send LM info stream for receiver 4    
 */ 
 
-#define EIT_PID				18
-#define ESC					27
-#define EVENTID				0						// for EIT
-#define INFOPERIOD      	500 	               	// time in ms between info outputs 
-#define MAXFREQ				2600000
-#define MAXFREQSTOSCAN		16
-#define MAXINFOS			100
-#define MAXINICOMMANDS		16						// maximum number of commands in the ini file
-#define MAXINPACKETS      	256						// packets in each input ring buffers
-#define MAXOUTPACKETS      	256						// packets in the  output ring buffer
-#define MAXPIDS				8						// numbers of allowed pids for a program
-#define MAXSRSTOSCAN		16						// number of SRs to scan
-#define MAXRECEIVERS       	4
-#define MINFREQ				144000
-#define MAXSR				45000
-#define MINSR				25
-#define NETWORK				0						// not needed by VLC for EIT
-#define NULL_PID			8191
-#define NULL2_PID			8190					// fake null packet insert by some modulators
-#define	ON					1
-#define OFF					0
-#define PAT_PID				0
-#define PORTINFOLMEX		1						// textual status for all receivers
-#define PORTINFOMULTIRX		2						// 4 line receiver summary
-#define PORTINFOLMEX2		3						// copy of 1
-#define PORTINFOMULTIRX2	4						// copy of 2
-#define PORTINFOLMBASE		60						// LongMynd textual status for receivers
-#define PORTLISTENBASE		20						// listen for receive commands on this + RX number (1-4)
-#define PORTTSBASE			40						// output TS to this + RX number
-#define QO100NO				0
-#define QO100BAND			1
-#define QO100BEACON			2
-#define QTHEADER			1						// QuickTune command header seen
-#define SDT_PID				17
-#define SERVICE_H262		0x02		
-#define SERVICE_H264		0x1b
-#define SERVICE_H265		0x24
-#define SERVICE_MPA			0x03			
-#define SERVICE_AAC			0x0f
-#define SERVICE_AC3			0x77	// ???
-#define TSID				0						// not needed by VLC for EIT
-#define DAY0 				0xc957 					// 31 December 1999 in Julian days
-#define WHHEADER			2						// WinterHill command header seen
 
-#define MODE_ANYWHERE		0						// TS is sent to where the command came from
-#define MODE_MULTICAST		1						// TS is sent to the multicast address
-#define MODE_LOCAL			2						// TS is sent to the address supplied at startup
-#define MODE_FIXED			3						// TS is sent to a fixed address
-
-#define IP_OFFNET			0
-#define IP_MYPC				1
-#define IP_MYNET			2
-#define IP_MULTI			3
-	
-
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-//@
-//@  control structure for each of the total of 4 possible receivers on the total of 2 possible NIMs
-//@  there are 5 structures: 0 is used by the system for IP control
-//@
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-struct rxcontrol
-{
-    uint8      		    receiver ;        	        	// 1-4 receiver number in the system
-    uint8               nimreceiver ;              		// 1/2 = first/second receiver in each NIM
-    uint8               xlnaexists ;            		// not all NIMs have external LNAs
-    uint8               nim ;                   		// 1/2 = NIMA/NIMB
-    char	            nimtype			[16] ;  		// FTS4334L, FTS4335
-    uint8         		active ;						//  /1 = actively receiving or searching
-    uint8               antenna ;               		// 1/2 = TOP/BOT
-    uint8         		scanstate ;             		// searching/locked etc
-
-	uint32				audiotype ;						// audio service type indicator
-	char				commandip		[16] ;			// the IP address that the command came from
-	uint32				commandreceivedtime ;			// the time at which the command arrived (ms)
-	uint32				debug0 ;
-	uint8				sendnullpackets ;	    		//  /1 = send null packets on the output UDP streams
-	int32				demodfreq ;						// frequency offset detected by the demodulator
-    uint32              enablefreqscan ;        		// scan the 'frequencies' list
-    uint32      		frequencies [MAXFREQSTOSCAN] ;	// kHz; multiple frequencies may be scanned
-	uint16              freqindex ;             		// the index of the current frequency in 'frequencies'
-	uint8				eitcontinuity ;					// sequence number for injected EIT packets
-	uint8				eitversion ;					// incrementing version number for injected EIT packets
-	char				eitlist 		[64] ;  		// list of info item numbers to put into a pid 18 EIT packet; 0 = end of list
-    uint32              enablesrscan ;          		// scan the 'symbolrates' list           
-	uint32				errors_outsequence ;
-	uint32				errors_insequence ;
-	uint32				errors_restart ;
-	uint32				errors_overflow ;
-	uint32				errors_sync ;
-	uint32				forbidden ;						// cannot send this TS to RPi VLC
-	uint32				hardwarefreq ;					// frequency passed to the tuner
-	uint32				highsideloc ;					// /1 = LO is on the high side
-    uint16      		summaryport ;			    	// port for sending 4 line info 
-	int					summarysock ;					// . . (same info for all receivers)
-	struct sockaddr_in 	summarysockaddr ;	    			 
-    uint16      		summary2port ;			
-	int					summary2sock ;					
-	struct sockaddr_in 	summary2sockaddr ;	    			 
-    uint16      		lminfoport ;			   		// port for sending original LM $ info   	
-	int					lminfosock ;		    			
-	struct sockaddr_in 	lminfosockaddr ;	    			 
-    uint16      		expinfoport ;			   		// port for sending expanded WH $ info 
-	int					expinfosock ;		    		// 	. . (same for all receivers)	
-	struct sockaddr_in 	expinfosockaddr ;	    			
-    uint16      		expinfo2port ;			    		// future expansion
-	int					expinfo2sock ;		    			 
-	struct sockaddr_in 	expinfo2sockaddr ;	    			 
-	uint32				insequence ;					// 4 bit counter inserted by the PIC for each packet
-    char	    		interfaceaddress[16] ;			// network interface to use, if more than one is available
-    char	    		ipaddress 		[16] ;			// address for all outgoing operations
-	uint32				ipchanges ;						// incremented when a command comes from a different IP
-	uint32				iptype ;						// destination IP type: MYPC, MYNET, OFFNET, MULTICAST
-	uint32				lastmodulation ;				// last modcod / FEC seen
-    uint16      		listenport ;	        		// port for incoming commands
-	int					listensock ;		    		// 
-	struct sockaddr_in 	listensockaddr ;	    		// 
-	uint32				modechanges ;					// increments on new command, new callsign, new codec
-    char	    		newipaddress 	[16] ;			// command came from a new IP address
-	uint32				programcount ;					// number of programs in the TS
-	int32				qo100locerror ;
-	uint32				qo100mode ;						// 0 / 1 / 2 = NO / QO-100 band / QO-100 beacon
-	uint32				requestedfreq ;					// the frequency in the incoming command
-	uint32				requestedloc ;					// the local oscillator the incoming command
-	uint32				requestedprog ;					// the program number in the incoming command
-    uint32      		symbolrates [MAXSRSTOSCAN] ;	// kS;  multiple symbol rates may be scanned
-	uint16              srindex ;               		// the index of the current symbol rate in 'symbolrates'
-	uint32				timeoutholdoffcount ;			// info is sent a number of times after timing out
-    uint16      		tsport ;			    		// port    for transport stream output
-	int					tssock ;		    			// socket  for transport stream output
-	struct sockaddr_in 	tssockaddr ;	    			//
-	uint32				outsequence ;					// 4 bit counter inserted by each PIC 
-	uint32				packetcountprogram ;			// total since the program started
-	uint32				packetcountrx ;					// total for this reception
-	uint32				nullpacketcountprogram ;		// total null packets since the program started
-	uint32				nullpacketcountrx ;				// total null packets for this reception
-	uint16				network ;						// TS network number; 0xffff for beacon; not needed for VLC EIT
-	uint32				signalacquiredtime ;			// time when the received signal was first acquired
-	uint32				signallosttime ;				// time when the received signal was lost
-	uint32				timedouttime ;					// time when the transmission timeout occurred
-	uint16				tsid ;							// TS ID; 0xaaaa for beacon; not needed for VLC EIT
-	uint16				pmtpid ;						// program map table pid
-	uint16				pcrpid ;						
-	uint16				serviceid ;						// TS program service ID; 0x0001 for beacon; NEEDED for VLC EIT
-	uint32				videotype ;						// video service type indicator
-	uint32				vlcnextcount ;					// incremented when N command sent to VLC
-	uint32				vlcstopcount ;					// incremented when S command sent to VLC
-	uint32				vlcstopped ;					// S command sent to VLC
-	uint32				xdotoolid ;						// xdotool ID for the VLC window			
-    int32               rawinfos  [MAXINFOS] ;  		// raw values of the info items  
-    char                textinfos [MAXINFOS][256] ;  	// formatted items for info or EIT output, indexed by parameter number  
-} ; 
-
-
-typedef struct
-{
-    uint8               data [188] ;
-    union
-    {
-        uint32          statusreg ;
-        struct
-        {
-            uint32      crc8            :8 ;
-            uint32     	valid           :1 ;
-            uint32      restart         :1 ;
-            uint32      overflow        :1 ;
-            uint32      filtering       :1 ;
-            uint32      receiver        :2 ;
-            uint32      spare0          :1 ;
-            uint32      highwater       :1 ;
-            uint32      crcnim          :1 ;          	// 1 = CRC provided by NIM
-            uint32      crcstatus       :1 ;           
-            uint32      spare1          :2 ;                                        
-            uint32      nullpackets     :4 ;
-            uint32      outsequence     :4 ;
-            uint32      insequence      :4 ;
-        } ;
-    } ;
-} packetx_t ;
-
-
-struct eitx
-{
-    uint                sync            :8  ;
-	
-    uint                pid1208         :5  ;
-    uint                tspriority      :1  ;
-    uint                payloadstart    :1  ;    
-    uint                tserror         :1  ;
-	
-    uint                pid0700         :8  ;
-
-    uint                continuity      :4  ;
-    uint                adaption        :2  ;
-    uint                scrambling      :2  ;
-	
-    uint                pointer         :8  ;
-
-    uint8               tableid             ;
-
-    uint                filler1         :4  ;                
-    uint                reserved0       :2  ;
-    uint                filler2         :1  ;
-    uint                syntax          :1  ;
-	
-    uint8               sectionlength       ;
-
-    uint                servicehigh     :8  ;   // upper byte of service id
-    uint                servicelow      :8  ;
-
-    uint                currentnext     :1  ;
-    uint                version         :5  ;
-    uint                reserved1       :2  ;
-	
-    uint                section         :8  ;
-    uint                lastsection     :8  ; 
-
-    uint                tsidhigh        :8  ;   // upper byte of ts id
-    uint                tsidlow	        :8  ;
-
-    uint                networkhigh     :8  ;   // upper byte of network id
-    uint                networklow      :8  ;
-
-    uint                lastsegment     :8  ;
-    uint                lasttable       :8  ;
-    
-    uint8               loop                ;
-
-    uint8               filler0 [168]       ;
-} ;
-
- 
-struct modinfo
-{
-    char    modtext [16] ;								// MODCOD gives modulation and FEC
-    int32 	minmer ;									// required MER threshold for decode in tenths
-} ;
-
- 
 const struct modinfo    modinfo_S [9] =
 {
     {"",0},
@@ -430,8 +192,10 @@ volatile	int32				tsprocenabled ;			// enable UDP packet sending
 			uint32				vgysel ;				// voltage generator Y low / high select	--> bit6
 			int					whfd ;
 			char				nullpacket [188] ;			
-			struct rxcontrol	rcv       				[MAXRECEIVERS+1] ;      // receivers 1-4; 0 is used by the system
+			rxcontrol			rcv       				[MAXRECEIVERS+1] ;      // receivers 1-4; 0 is used by the system
 			
+			static pthread_t 	web_thread;				// thread for webloop for websockets
+
 /*
 	i2csharedaccess		
 
@@ -533,6 +297,7 @@ int main (int argc, char *argv[])
 	tsproc_thread 		= 0 ;
 	info_thread			= 0 ;
 	inicommand_thread 	= 0 ;
+	web_thread			= 0 ;
 
 	whfd			= -1 ;
 	eitremove		= 0 ;							// winterhill.ini file items
@@ -1157,7 +922,20 @@ int main (int argc, char *argv[])
 		whexit (88) ;
 	}	
 
+	// data for websockets thread
+    thread_vars_t thread_vars_web = {
+        .main_err_ptr = 0,
+		.rcv = &rcv
+    };
     
+    status = pthread_create(&web_thread, NULL, loop_web, (void *)&thread_vars_web);
+	if (status != 0)
+	{
+		logit ("Cannot create thread for web loop\r\n") ;
+		printf ("Cannot create thread for web loop\r\n") ;
+		whexit (88) ;
+	}	
+
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //@
@@ -1874,6 +1652,167 @@ int main (int argc, char *argv[])
     }	
 }
 
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@
+//@	 configure ip address for a receiver - used by websocket control commands
+//@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+void configureip(int32 rx, char *newIp)								
+{
+	rcv[rx].ipchanges++ ;											// count an IP change
+	strcpy (rcv[rx].newipaddress, newIp) ;	// new address
+}
+
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@
+//@	 basic version of setting a new frequency - used by websocket control commands
+//@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+int configurefrequency(int32 rx, int32 freqx, int32 locx, int32 srx)
+{
+	int32 goodx = 0;
+	uint32 y;
+	int32 temp ;
+	
+	if (rx > 0 && freqx >= 0 && locx >= 0 && srx > 0)	
+	{
+		if (freqx < locx)
+		{
+			rcv[rx].highsideloc = 1 ;										// LO is on the high side
+		}
+		else
+		{
+			rcv[rx].highsideloc = 0 ;										// LO is on the low side
+		}
+		if (((abs(freqx - locx) >= MINFREQ) && (abs(freqx - locx) <= MAXFREQ)) || freqx == 0)
+		{
+			if ((srx >= MINSR) && (srx <= MAXSR))
+			{
+				goodx = 1 ;													// good command
+
+				if ((rx & 1) && (abs(freqx - qo100beaconfreq) <= 200))	
+				{
+					rcv[rx].qo100mode     = QO100BEACON ;
+					freqx 			      = qo100beaconfreq ;
+					rcv[rx].qo100locerror = 0 ;
+				}
+				else if ((freqx >= 10490000) && (freqx < 10500000))			// QO-100
+				{
+					rcv[rx].qo100mode 	= QO100BAND ;
+				}
+				else
+				{
+					rcv[rx].qo100mode   = QO100NO ;
+				}
+
+				rcv[rx].requestedfreq   = freqx ;                            
+				rcv[rx].requestedloc 	= locx ;
+				if (freqx != 0)
+				{                            
+					rcv[rx].hardwarefreq	= abs (rcv[rx].requestedfreq - rcv[rx].requestedloc) ;
+
+					if (rcv[rx].qo100mode == QO100BAND)
+					{
+						rcv[rx].hardwarefreq -= rcv[rx].qo100locerror ;
+					}
+				}
+				else
+				{
+					rcv[rx].hardwarefreq = 0 ;
+				}
+				rcv[rx].frequencies[0]  = freqx ;
+				rcv[rx].freqindex       = 0 ;
+				rcv[rx].enablefreqscan  = 0 ;
+				rcv[rx].symbolrates[0]  = srx ;
+				rcv[rx].srindex         = 0 ;
+				rcv[rx].enablesrscan    = 0 ;
+				//rcv[rx].antenna         = antx ;
+				rcv[rx].pmtpid			= 0 ;
+				rcv[rx].scanstate       = 0 ;
+				//rcv[rx].requestedprog	= reqprogx ;
+				rcv[rx].forbidden 	    = 0 ;
+				if (rcv[rx].receiver)										// see if receiver exists
+				{
+					int32 antx = rcv[rx].rawinfos[STATUS_ANTENNA];
+
+					rcv[rx].active      = 1 ;
+					memset ((void*)&rcv[rx].rawinfos,0,sizeof(rcv[rx].rawinfos)) ;
+					memset ((void*)&rcv[rx].textinfos,0,sizeof(rcv[rx].textinfos)) ;
+					memcpy ((void*)&rcv[rx].eitlist,EITDEFAULTS,sizeof(EITDEFAULTS)) ;  
+					rcv[rx].modechanges++ ;									// count a mode change
+
+					y = STATUS_ANTENNA ;
+					rcv[rx].rawinfos[y] = antx ;
+
+					rcv[rx].signalacquiredtime 		= 0 ;
+					rcv[rx].signallosttime 			= 0 ;
+					rcv[rx].packetcountrx  	   		= 0 ;					// clear packet count				
+					rcv[rx].nullpacketcountrx  		= 0 ;					// clear null packet count				
+					rcv[rx].errors_sync 			= 0 ;
+					rcv[rx].errors_insequence		= 0 ;
+					rcv[rx].lastmodulation			= 0 ;
+
+					temp = ((rx - 1) & 2) + 1 ;								// force 1 or 3 
+					rcv[temp].errors_outsequence	= 0 ;
+					rcv[temp].errors_restart		= 0 ;
+					
+					if (i2csharedaccess != I2CMAINHAS)
+					{
+						if (i2csharedaccess == I2CINFOHAS)
+						{
+							i2csharedaccess = I2CMAINWANTS ;
+						}
+						while (i2csharedaccess != I2CMAINHAS)
+						{
+							usleep (10 * 1000) ;
+						}	
+					}					
+									
+					GLOBALNIM = rcv[rx].nim ;
+					stv6120_init 							// configure receiver
+					(
+						rcv[rx].nimreceiver, rcv[rx].hardwarefreq, 
+						rcv[rx].antenna,	 rcv[rx].symbolrates[0]				
+					) ;
+					
+					if (rcv[rx].qo100locerror && rcv[rx].qo100mode != QO100NO)
+					{
+						temp = 1 ;							// in the QO100 band 
+					}										// and rx has been calibrated
+					else
+					{
+						temp = 0 ;
+					}
+					
+					stv0910_setup_receive 					// configure demodulator
+					(
+						rcv[rx].nimreceiver, 
+						rcv[rx].symbolrates[0], 
+						temp								// restrict frequency scan when calibrated
+					); 
+
+					stv0910_start_scan (rcv[rx].nimreceiver) ;       						// look for a signal
+
+					y = STATUS_STATE ;
+					rcv[rx].scanstate  	= STATE_SEARCH ;
+					rcv[rx].rawinfos[y] = STATE_SEARCH ;
+					tsprocenabled 		= 1 ; 					// enable the packet processing
+					lminfoutenabled 	= 1 ;
+
+					i2csharedaccess 	= I2CINFOHAS ;			// give I2C access back to info loop
+				}
+			}
+		}
+	}
+
+	return goodx;
+}
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

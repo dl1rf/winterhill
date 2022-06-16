@@ -1,6 +1,7 @@
 BIN = winterhill-3v20
-SRC = main.c rpi2c.c nim.c stv0910.c stv0910_utils.c stvvglna.c stvvglna_utils.c stv6120.c stv6120_utils.c
+SRC = main.c rpi2c.c nim.c stv0910.c stv0910_utils.c stvvglna.c stvvglna_utils.c stv6120.c stv6120_utils.c web/web.c web/json.c
 OBJ = ${SRC:.c=.o}
+LDFLAGS = -lwebsockets
 
 ifndef CC
 CC = gcc 

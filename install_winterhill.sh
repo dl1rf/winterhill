@@ -16,7 +16,8 @@ GIT_SRC="BritishAmateurTelevisionClub"
 GIT_SRC_FILE=".wh_gitsrc"
 
 if [ "$1" == "-d" ]; then
-  GIT_SRC="davecrump";  # G8GKQ
+  GIT_SRC="tomvdb"; # ZR6TG
+  #GIT_SRC="davecrump";  # G8GKQ
   #GIT_SRC="foxcube";    # G4EWJ
   echo
   echo "-------------------------------------------------------"
@@ -50,7 +51,7 @@ echo "------------------------------------"
 echo "---- Loading required packages -----"
 echo "------------------------------------"
 echo
-sudo apt-get -y install xdotool xterm raspberrypi-kernel-headers
+sudo apt-get -y install xdotool xterm raspberrypi-kernel-headers cmake
 
 echo "--------------------------------------------------------------"
 echo "---- Put the Desktop Toolbar at the bottom of the screen -----"
@@ -92,6 +93,18 @@ echo "------------------------------------------------------------"
 echo
 sudo sed -i "/^#hdmi_force_hotplug=1/c\hdmi_force_hotplug=1" /boot/config.txt
 
+echo "-------------------------------------------------------------------"
+echo "---- Download & Install Dependencies for WinterHill Software ------"
+echo "-------------------------------------------------------------------"
+echo
+git clone https://github.com/warmcat/libwebsockets.git
+git checkout 2445793d15af39fac9ce527bb28ffd42a974bf4f
+cd libwebsockets/
+mkdir build
+cd build/
+cmake ..
+make
+make install
 
 echo "-------------------------------------------"
 echo "---- Download the WinterHill Software -----"

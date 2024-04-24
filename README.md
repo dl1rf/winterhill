@@ -27,10 +27,12 @@ After reboot, resume the detailed instructions.
 
 # Advanced notes
 
-To load the development version, cut and paste in the following lines:
+To load this development version, cut and paste in the following lines:
 
 ```sh
-wget https://raw.githubusercontent.com/davecrump//winterhill/main/install_winterhill.sh
+wget https://raw.githubusercontent.com/dl1rf/winterhill/main/install_winterhill.sh
 chmod +x install_winterhill.sh
 ./install_winterhill.sh -d
 ```
+
+This development version will work with any user name. I have removed the restriction to be forced to user 'pi'.

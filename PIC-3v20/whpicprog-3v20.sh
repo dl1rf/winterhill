@@ -5,9 +5,25 @@ cd $HOME/winterhill/whsource-3v20/whpicprog-3v20
 sudo ./whpicprog-3v20 --check
 PIC_RETURN=$?
 
+if [ "$PIC_RETURN" > 127 ]; then
+  echo Program aborted
+  echo
+  read -n 1 -s -r -p "Press any key to continue"
+  exit
+fi
+
 if [ "$PIC_RETURN" == 34 ]; then
   echo Both PICs Programmed with software 3v20
   echo No Action Required
+  echo
+  read -n 1 -s -r -p "Press any key to continue"
+  exit
+fi
+
+if [ "$PIC_RETURN" == 17 ]; then
+  echo PIC A not fitted
+  echo PIC B not fitted
+  echo Is this a WinterHill system ?
   echo
   read -n 1 -s -r -p "Press any key to continue"
   exit

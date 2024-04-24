@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /home/pi/winterhill/whsource-3v20/whpicprog-3v20
+cd $HOME/winterhill/whsource-3v20/whpicprog-3v20
 
 sudo ./whpicprog-3v20 --check
 PIC_RETURN=$?

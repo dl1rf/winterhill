@@ -5,18 +5,13 @@
 
 # Winterhill for a 1920 x 1080 screen
 
-whoami | grep -q pi
-if [ $? != 0 ]; then
-  echo "Install must be performed as user pi"
-  exit
-fi
-
 # Check which source needs to be loaded
 GIT_SRC="BritishAmateurTelevisionClub"
 GIT_SRC_FILE=".wh_gitsrc"
 
 if [ "$1" == "-d" ]; then
-  GIT_SRC="tomvdb"; # ZR6TG
+  GIT_SRC="dl1rf";       # DL1RF
+  #GIT_SRC="tomvdb";     # ZR6TG
   #GIT_SRC="davecrump";  # G8GKQ
   #GIT_SRC="foxcube";    # G4EWJ
   echo
@@ -39,7 +34,7 @@ else
   echo "------------------------------------------------------------"
 fi
 
-cd /home/pi
+cd $HOME
 
 echo "--------------------------------------------------------"
 echo "----- Disabling the raspberry ssh password warning -----"
@@ -53,13 +48,18 @@ echo "------------------------------------"
 echo
 sudo apt-get -y install xdotool xterm raspberrypi-kernel-headers cmake
 
+# save systems 'config.txt' file to 'config.txt.orig' but only the first time
+if [ ! -f $CONFIG_DIR/config.txt.orig ]; then
+  sudo cp $CONFIG_DIR/config.txt $CONFIG_DIR/config.txt.orig
+fi
+
 echo "--------------------------------------------------------------"
 echo "---- Put the Desktop Toolbar at the bottom of the screen -----"
 echo "--------------------------------------------------------------"
 echo
-cd /home/pi/.config/lxpanel/LXDE-pi/panels
+cd $HOME/.config/lxpanel/LXDE-pi/panels
 sed -i "/^  edge=top/c\  edge=bottom" panel
-cd /home/pi
+cd $HOME
 
 echo "----------------------------------------------------"
 echo "---- Increasing gpu memory in /boot/config.txt -----"
@@ -97,40 +97,42 @@ echo "-------------------------------------------------------------------"
 echo "---- Download & Install Dependencies for WinterHill Software ------"
 echo "-------------------------------------------------------------------"
 echo
-git clone https://github.com/warmcat/libwebsockets.git
-cd /home/pi/libwebsockets/
-git checkout 2445793d15af39fac9ce527bb28ffd42a974bf4f
-mkdir build
-cd /home/pi/libwebsockets/build/
-cmake -DLWS_WITH_SSL=0 ..
-make
-sudo make install
-sudo ldconfig
+if [ ! -f /usr/local/lib/libwebsockets.so ]; then
+  git clone https://github.com/warmcat/libwebsockets.git
+  cd $HOME/libwebsockets/
+  git checkout 2445793d15af39fac9ce527bb28ffd42a974bf4f
+  mkdir build
+  cd $HOME/libwebsockets/build/
+  cmake -DLWS_WITH_SSL=0 ..
+  make
+  sudo make install
+  sudo ldconfig
+fi
 
 echo "-------------------------------------------"
 echo "---- Download the WinterHill Software -----"
 echo "-------------------------------------------"
 echo
-cd /home/pi
+cd $HOME
 wget https://github.com/${GIT_SRC}/winterhill/archive/main.zip
 unzip -o main.zip
 mv winterhill-main winterhill
 rm main.zip
 
-BUILD_VERSION=$(</home/pi/winterhill/latest_version.txt)
-echo INSTALL WinterHill build started version $BUILD_VERSION > /home/pi/winterhill/whlog.txt
+BUILD_VERSION=$(<$HOME/winterhill/latest_version.txt)
+echo INSTALL WinterHill build started version $BUILD_VERSION > $HOME/winterhill/whlog.txt
 
 echo "------------------------------------------"
 echo "---- Building spi driver for install -----"
 echo "------------------------------------------"
 echo
-cd /home/pi/winterhill/whsource-3v20/whdriver-3v20
+cd $HOME/winterhill/whsource-3v20/whdriver-3v20
 make
 if [ $? != 0 ]; then
   echo "------------------------------------------"
   echo "- Failed to build the WinterHill Driver --"
   echo "------------------------------------------"
-  echo INSTALL Initial make of driver failed >> /home/pi/winterhill/whlog.txt
+  echo INSTALL Initial make of driver failed >> $HOME/winterhill/whlog.txt
   exit
 fi
 
@@ -141,7 +143,7 @@ if [ $? != 0 ]; then
   echo "------------------------------------------"
   echo "--- Failed to load WinterHill Driver -----"
   echo "------------------------------------------"
-  echo INSTALL Initial insmod of driver failed >> /home/pi/winterhill/whlog.txt
+  echo INSTALL Initial insmod of driver failed >> $HOME/winterhill/whlog.txt
   exit
 fi
 
@@ -150,80 +152,106 @@ if [ $? != 0 ]; then
   echo "-------------------------------------------------------------"
   echo "--- Failed to find previously loaded  WinterHill Driver -----"
   echo "-------------------------------------------------------------"
-  echo INSTALL Initial check of driver failed >> /home/pi/winterhill/whlog.txt
+  echo INSTALL Initial check of driver failed >> $HOME/winterhill/whlog.txt
   exit
 else
   echo
   echo "------------------------------------------------"
   echo "--- Successfully loaded  WinterHill Driver -----"
   echo "------------------------------------------------"
-  echo INSTALL Driver Successfully loaded >> /home/pi/winterhill/whlog.txt
+  echo INSTALL Driver Successfully loaded >> $HOME/winterhill/whlog.txt
   echo
 fi
-cd /home/pi
+cd $HOME
 
 echo "------------------------------------------------"
 echo "---- Set up to load the spi driver at boot -----"
 echo "------------------------------------------------"
 echo
-sudo sed -i "/^exit 0/c\cd /home/pi/winterhill/whsource-3v20/whdriver-3v20\nsudo insmod whdriver-3v20.ko\nexit 0" /etc/rc.local
+sudo sed -i "/^exit 0/c\cd $HOME/winterhill/whsource-3v20/whdriver-3v20\nsudo insmod whdriver-3v20.ko\nexit 0" /etc/rc.local
 
 echo "---------------------------------------------------"
 echo "---- Building the main WinterHill Application -----"
 echo "---------------------------------------------------"
 echo
-cd /home/pi/winterhill/whsource-3v20/whmain-3v20
+cd $HOME/winterhill/whsource-3v20/whmain-3v20
 make
 if [ $? != 0 ]; then
   echo "----------------------------------------------"
   echo "- Failed to build the WinterHill Application -"
   echo "----------------------------------------------"
-  echo INSTALL make of main application failed >> /home/pi/winterhill/whlog.txt
+  echo INSTALL make of main application failed >> $HOME/winterhill/whlog.txt
   exit
 fi
-cp winterhill-3v20 /home/pi/winterhill/RPi-3v20/winterhill-3v20
-cd /home/pi
+cp winterhill-3v20 $HOME/winterhill/RPi-3v20/winterhill-3v20
+cd $HOME
 
 echo "--------------------------------------"
 echo "---- Building the PIC Programmer -----"
 echo "--------------------------------------"
 echo
-cd /home/pi/winterhill/whsource-3v20/whpicprog-3v20
+cd $HOME/winterhill/whsource-3v20/whpicprog-3v20
 ./make.sh
 if [ $? != 0 ]; then
   echo "--------------------------------------"
   echo "- Failed to build the PIC Programmer -"
   echo "--------------------------------------"
-  echo INSTALL make of PIC Programmer failed >> /home/pi/winterhill/whlog.txt
+  echo INSTALL make of PIC Programmer failed >> $HOME/winterhill/whlog.txt
   exit
 fi
-cp whpicprog-3v20 /home/pi/winterhill/PIC-3v20/whpicprog-3v20
-cd /home/pi
+cp whpicprog-3v20 $HOME/winterhill/PIC-3v20/whpicprog-3v20
+cd $HOME
 
 echo "--------------------------------------------"
 echo "---- Copy the shortcuts to the desktop -----"
 echo "--------------------------------------------"
 echo
-cp /home/pi/winterhill/configs/Kill_WH           /home/pi/Desktop/Kill_WH
-cp /home/pi/winterhill/configs/WH_Local          /home/pi/Desktop/WH_Local
-cp /home/pi/winterhill/configs/WH_Anyhub         /home/pi/Desktop/WH_Anyhub
-cp /home/pi/winterhill/configs/WH_Anywhere       /home/pi/Desktop/WH_Anywhere
-cp /home/pi/winterhill/configs/WH_Multihub       /home/pi/Desktop/WH_Multihub
-cp /home/pi/winterhill/configs/WH_Fixed          /home/pi/Desktop/WH_Fixed
-cp /home/pi/winterhill/configs/PIC_Prog          /home/pi/Desktop/PIC_Prog
-cp /home/pi/winterhill/configs/Show_IP           /home/pi/Desktop/Show_IP
-cp /home/pi/winterhill/configs/Shutdown          /home/pi/Desktop/Shutdown
-cp /home/pi/winterhill/configs/Check_for_Update  /home/pi/Desktop/Check_for_Update
+cd $HOME/winterhill/configs
+cp templates/Kill_WH           Kill_WH
+cp templates/WH_Local          WH_Local
+cp templates/WH_Anyhub         WH_Anyhub
+cp templates/WH_Anywhere       WH_Anywhere
+cp templates/WH_Multihub       WH_Multihub
+cp templates/WH_Fixed          WH_Fixed
+cp templates/PIC_Prog          PIC_Prog
+cp templates/Show_IP           Show_IP
+cp templates/Shutdown          Shutdown
+cp templates/Check_for_Update  Check_for_Update
+cp templates/startup.desktop   startup.desktop
+
+sed -i "s|<HOME>|$HOME|" Kill_WH
+sed -i "s|<HOME>|$HOME|" WH_Local
+sed -i "s|<HOME>|$HOME|" WH_Anyhub
+sed -i "s|<HOME>|$HOME|" WH_Anywhere
+sed -i "s|<HOME>|$HOME|" WH_Multihub
+sed -i "s|<HOME>|$HOME|" WH_Fixed
+sed -i "s|<HOME>|$HOME|" PIC_Prog
+sed -i "s|<HOME>|$HOME|" Show_IP
+sed -i "s|<HOME>|$HOME|" Shutdown
+sed -i "s|<HOME>|$HOME|" Check_for_Update
+sed -i "s|<HOME>|$HOME|" startup.desktop
+cd $HOME
+
+cp $HOME/winterhill/configs/Kill_WH           $HOME/Desktop/Kill_WH
+cp $HOME/winterhill/configs/WH_Local          $HOME/Desktop/WH_Local
+cp $HOME/winterhill/configs/WH_Anyhub         $HOME/Desktop/WH_Anyhub
+cp $HOME/winterhill/configs/WH_Anywhere       $HOME/Desktop/WH_Anywhere
+cp $HOME/winterhill/configs/WH_Multihub       $HOME/Desktop/WH_Multihub
+cp $HOME/winterhill/configs/WH_Fixed          $HOME/Desktop/WH_Fixed
+cp $HOME/winterhill/configs/PIC_Prog          $HOME/Desktop/PIC_Prog
+cp $HOME/winterhill/configs/Show_IP           $HOME/Desktop/Show_IP
+cp $HOME/winterhill/configs/Shutdown          $HOME/Desktop/Shutdown
+cp $HOME/winterhill/configs/Check_for_Update  $HOME/Desktop/Check_for_Update
 
 echo "--------------------------------------------------------------------"
 echo "---- Enable Autostart for the selected WinterHill mode at boot -----"
 echo "--------------------------------------------------------------------"
 echo
-mkdir /home/pi/.config/autostart
-cp /home/pi/winterhill/configs/startup.desktop /home/pi/.config/autostart/startup.desktop
+mkdir $HOME/.config/autostart
+cp $HOME/winterhill/configs/startup.desktop $HOME/.config/autostart/startup.desktop
 
 # Save git source used
-echo "${GIT_SRC}" > /home/pi/${GIT_SRC_FILE}
+echo "${GIT_SRC}" > $HOME/${GIT_SRC_FILE}
 
 echo
 echo "SD Card Serial:"
@@ -234,7 +262,7 @@ echo
 echo "--------------------------------"
 echo "----- Complete.  Rebooting -----"
 echo "--------------------------------"
-echo INSTALL Reached end of install script >> /home/pi/winterhill/whlog.txt
+echo INSTALL Reached end of install script >> $HOME/winterhill/whlog.txt
 
 sleep 1
 

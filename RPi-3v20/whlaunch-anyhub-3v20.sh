@@ -32,6 +32,6 @@ do
 done
 
 # Now launch
-cd /home/pi/winterhill/RPi-3v20/
+cd $HOME/winterhill/RPi-3v20/
 ./winterhill-anyhub-3v20.sh 0 9900 0
 

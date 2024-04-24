@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=WinterHill Fixed
-Comment=Sends 4 TS to a fixed IP.  No local display
+Name=WinterHill Anyhub
+Comment=TS is sent to wherever the QT receive command came from
 Icon=/usr/share/pixmaps/openbox.png
-Exec=/home/pi/winterhill/RPi-3v20/whlaunch-fixed-3v20.sh
+Exec=<HOME>/winterhill/RPi-3v20/whlaunch-anyhub-3v20.sh
 Type=Application
 Encoding=UTF-8
 Terminal=true

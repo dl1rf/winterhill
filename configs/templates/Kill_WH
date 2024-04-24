@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=Stop WinterHill
 Comment=Kills all WinterHill Processes
-Icon=/home/pi/winterhill/configs/stop.png
-Exec=/home/pi/winterhill/whstop-3v20.sh
+Icon=<HOME>/winterhill/configs/stop.png
+Exec=<HOME>/winterhill/whstop-3v20.sh
 Type=Application
 Encoding=UTF-8
 Terminal=true

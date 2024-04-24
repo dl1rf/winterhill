@@ -7,9 +7,9 @@ ifndef CC
 CC = gcc 
 endif
 COPT = -O3 -march=native -mtune=native -I/opt/vc/include/ -L/opt/vc/lib/ -lbcm_host
-#CFLAGS += -std=c99 -g -Wall -Wextra -Wpedantic -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE 
-#CFLAGS +=  -g -Wall -Wextra -Wpedantic -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE 
-CFLAGS +=  -g -Wall -Wextra -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE 
+#CFLAGS += -std=c99 -g -Wall -Wextra -Wpedantic -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE -DHOME_DIR=\"${HOME}\"
+#CFLAGS +=  -g -Wall -Wextra -Wpedantic -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE -DHOME_DIR=\"${HOME}\"
+CFLAGS +=  -g -Wall -Wextra -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE -DHOME_DIR=\"${HOME}\"
 
 all: ${BIN} 
 

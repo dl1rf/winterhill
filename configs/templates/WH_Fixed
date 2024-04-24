@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=WH_Local
-Comment=Displays 4 VLCs on the RPi HDMI Screen
+Name=WinterHill Fixed
+Comment=Sends 4 TS to a fixed IP.  No local display
 Icon=/usr/share/pixmaps/openbox.png
-Exec=/home/pi/winterhill/startup.sh
+Exec=<HOME>/winterhill/RPi-3v20/whlaunch-fixed-3v20.sh
 Type=Application
 Encoding=UTF-8
 Terminal=true

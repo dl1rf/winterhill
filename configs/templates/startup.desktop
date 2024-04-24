@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=WinterHill Local
+Name=Start Winterhill
 Comment=Displays 4 VLCs on the RPi HDMI Screen
 Icon=/usr/share/pixmaps/openbox.png
-Exec=/home/pi/winterhill/RPi-3v20/whlaunch-local-3v20.sh
+Exec=<HOME>/winterhill/startup.sh
 Type=Application
 Encoding=UTF-8
 Terminal=true

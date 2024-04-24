@@ -3,7 +3,7 @@
 ## Check which version number to look up
 GIT_SRC_FILE=".wh_gitsrc"
 if [ -e ${GIT_SRC_FILE} ]; then
-  GIT_SRC=$(</home/pi/${GIT_SRC_FILE})
+  GIT_SRC=$(<${HOME}/${GIT_SRC_FILE})
 else
   GIT_SRC="BritishAmateurTelevisionClub"
 fi
@@ -14,8 +14,8 @@ if [ "$GIT_SRC" == "davecrump" ]; then
 fi
 
 ## Download the latest_version file
-cd /home/pi/winterhill
-rm /home/pi/winterhill/latest_version.txt  >/dev/null 2>/dev/null
+cd $HOME/winterhill
+rm $HOME/winterhill/latest_version.txt  >/dev/null 2>/dev/null
 wget --timeout=2 https://raw.githubusercontent.com/${GIT_SRC}/winterhill/main/latest_version.txt
 
 ## Create the file if it doesn't exist
@@ -46,11 +46,11 @@ fi
 
 ## Format OK, so check against installed version
 LATESTVERSION=$(head -c 9 latest_version.txt)
-rm /home/pi/winterhill/latest_version.txt  >/dev/null 2>/dev/null
+rm $HOME/winterhill/latest_version.txt  >/dev/null 2>/dev/null
 
 ## Check installed version
 INSTALLEDVERSION=$(head -c 9 installed_version.txt)
-cd /home/pi
+cd $HOME
 
 ## Compare versions
 if [ $LATESTVERSION -eq $INSTALLEDVERSION ];    ## No need for upgrade
@@ -61,19 +61,19 @@ then
     printf "\n"
     if [[ "$REPLY" = "y" || "$REPLY" = "Y" ]]; then  ## Force upgrade requested
         printf "\nUpgrading now...\n"
-        cd /home/pi
+        cd $HOME
         rm update.sh >/dev/null 2>/dev/null
         wget https://raw.githubusercontent.com/BritishAmateurTelevisionClub/winterhill/main/update.sh
         chmod +x update.sh
-        /home/pi/update.sh -p
+        $HOME/update.sh -p
         exit
     elif [[ "$REPLY" = "d" || "$REPLY" = "D" ]]; then  ## Development upgrade requested
         printf "\nUpgrading now to the Development Version...\n"
-        cd /home/pi
+        cd $HOME
         rm update.sh >/dev/null 2>/dev/null
         wget https://raw.githubusercontent.com/davecrump/winterhill/main/update.sh
         chmod +x update.sh
-        /home/pi/update.sh -d
+        $HOME/update.sh -d
         exit
     else                                        ## Force upgrade not required
         printf "Not upgrading\n"
@@ -91,11 +91,11 @@ then
     if [[ "$REPLY" = "y" || "$REPLY" = "Y" ]];  ## Upgrade requested
     then
         printf "\nUpgrading now...\n"
-        cd /home/pi
+        cd $HOME
         rm update.sh >/dev/null 2>/dev/null
         wget https://raw.githubusercontent.com/BritishAmateurTelevisionClub/winterhill/main/update.sh
         chmod +x update.sh
-        source /home/pi/update.sh -p
+        source $HOME/update.sh -p
         exit
     else                                        ##  Upgrade available, but rejected
         printf "Not upgrading\n"
@@ -112,19 +112,19 @@ else                                            ## Version Error
     printf "\n"
     if [[ "$REPLY" = "y" || "$REPLY" = "Y" ]]; then  ## Force upgrade requested
         printf "\nUpgrading now...\n"
-        cd /home/pi
+        cd $HOME
         rm update.sh >/dev/null 2>/dev/null
         wget https://raw.githubusercontent.com/BritishAmateurTelevisionClub/winterhill/main/update.sh
         chmod +x update.sh -p
-        /home/pi/update.sh
+        $HOME/update.sh
         exit
     elif [[ "$REPLY" = "d" || "$REPLY" = "D" ]]; then  ## Development upgrade requested
         printf "\nUpgrading now to the Development Version...\n"
-        cd /home/pi
+        cd $HOME
         rm update.sh >/dev/null 2>/dev/null
         wget https://raw.githubusercontent.com/davecrump/winterhill/main/update.sh
         chmod +x update.sh
-        /home/pi/update.sh -d
+        $HOME/update.sh -d
         exit
     else                                        ## Force upgrade not required
         printf "Not upgrading\n"

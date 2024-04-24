@@ -314,7 +314,7 @@ int main (int argc, char *argv[])
     signal (SIGINT,  sig_handler);
     signal (SIGTERM, sig_handler);
 
-	sprintf (logfilename, "/home/pi/winterhill/whlog.txt") ;
+	sprintf (logfilename, HOME_DIR"/winterhill/whlog.txt") ;
     
 	sprintf (temps, "<<<<<<<<<< Program started:  winterhill-%s%s  ", VERSIONX, VERSIONX2) ;
 	for (x = 0 ; x < (uint32)argc ; x++)
@@ -344,14 +344,14 @@ int main (int argc, char *argv[])
 
 // look for winterhill.ini and parse it if present
 
-	ip = fopen ("/home/pi/winterhill/winterhill.ini","rt") ;
+	ip = fopen (HOME_DIR"/winterhill/winterhill.ini","rt") ;
 	if (ip == 0)
 	{
-		printf ("/home/pi/winterhill/winterhill.ini not found\r\n") ;
+		printf (HOME_DIR"/winterhill/winterhill.ini not found\r\n") ;
 	}
 	else
 	{
-		printf ("Processing /home/pi/winterhill/winterhill.ini\r\n") ;
+		printf ("Processing "HOME_DIR"/winterhill/winterhill.ini\r\n") ;
 		while (!feof(ip))
 		{
 			memset (buff,0,sizeof(buff)) ;

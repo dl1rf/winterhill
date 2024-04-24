@@ -9,12 +9,12 @@ echo "------ Commencing WinterHill Update ------------"
 echo "------------------------------------------------"
 echo
 
-cd /home/pi
+cd $HOME
 
 ## Check which update to load
 GIT_SRC_FILE=".wh_gitsrc"
 if [ -e ${GIT_SRC_FILE} ]; then
-  GIT_SRC=$(</home/pi/${GIT_SRC_FILE})
+  GIT_SRC=$(<$(HOME)/${GIT_SRC_FILE})
 else
   GIT_SRC="BritishAmateurTelevisionClub"
 fi
@@ -67,12 +67,12 @@ echo "-- Making a Back-up of the User Configuration --"
 echo "------------------------------------------------"
 echo
 
-PATHINI="/home/pi/winterhill"
-PATHUBACKUP="/home/pi/user_backups"
+PATHINI="$HOME/winterhill"
+PATHUBACKUP="$HOME/user_backups"
 mkdir "$PATHUBACKUP" >/dev/null 2>/dev/null
 
 # Note previous version number
-cp -f -r /home/pi/winterhill/installed_version.txt "$PATHUBACKUP"/prev_installed_version.txt
+cp -f -r $HOME/winterhill/installed_version.txt "$PATHUBACKUP"/prev_installed_version.txt
 
 # Make a safe copy of the user .ini file
 cp -f -r "$PATHINI"/winterhill.ini "$PATHUBACKUP"/winterhill.ini
@@ -96,7 +96,7 @@ echo
 echo "Updating the WinterHill Software"
 echo
 
-cd /home/pi
+cd $HOME
 
 # Delete the previous winterhill code
 rm -rf winterhill >/dev/null 2>/dev/null
@@ -105,29 +105,29 @@ echo "--------------------------------------------------"
 echo "---- Downloading the new WinterHill Software -----"
 echo "--------------------------------------------------"
 echo
-cd /home/pi
+cd $HOME
 wget https://github.com/${GIT_SRC}/winterhill/archive/main.zip
 unzip -o main.zip
 mv winterhill-main winterhill
 rm main.zip
 
-BUILD_VERSION=$(</home/pi/winterhill/latest_version.txt)
-sudo chown pi /home/pi/winterhill/whlog.txt  # Will be owned by root in some conditions
-echo UPDATE WinterHill update started version $BUILD_VERSION >> /home/pi/winterhill/whlog.txt
-echo UPDATE from $GIT_SRC repository >> /home/pi/winterhill/whlog.txt
+BUILD_VERSION=$(<$(HOME)/winterhill/latest_version.txt)
+sudo chown pi $HOME/winterhill/whlog.txt  # Will be owned by root in some conditions
+echo UPDATE WinterHill update started version $BUILD_VERSION >> $HOME/winterhill/whlog.txt
+echo UPDATE from $GIT_SRC repository >> $HOME/winterhill/whlog.txt
 
 # spi driver may need rebuilding after OS update
 echo "--------------------------------------------"
 echo "---- Rebuilding spi driver for install -----"
 echo "--------------------------------------------"
 echo
-cd /home/pi/winterhill/whsource-3v20/whdriver-3v20
+cd $HOME/winterhill/whsource-3v20/whdriver-3v20
 make
 if [ $? != 0 ]; then
   echo "------------------------------------------"
   echo "- Failed to build the WinterHill Driver --"
   echo "------------------------------------------"
-  echo UPDATE Failed to build the WinterHill Driver >> /home/pi/winterhill/whlog.txt
+  echo UPDATE Failed to build the WinterHill Driver >> $HOME/winterhill/whlog.txt
   exit
 fi
 
@@ -142,7 +142,7 @@ if [ $? != 0 ]; then
   echo "------------------------------------------"
   echo "--- Failed to load WinterHill Driver -----"
   echo "------------------------------------------"
-  echo UPDATE Failed to load the WinterHill Driver >> /home/pi/winterhill/whlog.txt
+  echo UPDATE Failed to load the WinterHill Driver >> $HOME/winterhill/whlog.txt
   exit
 fi
 
@@ -151,17 +151,17 @@ if [ $? != 0 ]; then
   echo "-----------------------------------------------------"
   echo "--- Failed to find new loaded WinterHill Driver -----"
   echo "-----------------------------------------------------"
-  echo UPDATE Failed to find the new loaded WinterHill Driver >> /home/pi/winterhill/whlog.txt
+  echo UPDATE Failed to find the new loaded WinterHill Driver >> $HOME/winterhill/whlog.txt
   exit
 else
   echo
   echo "------------------------------------------------"
   echo "--- Successfully loaded  WinterHill Driver -----"
   echo "------------------------------------------------"
-  echo UPDATE Successfully loaded  WinterHill Driver >> /home/pi/winterhill/whlog.txt
+  echo UPDATE Successfully loaded  WinterHill Driver >> $HOME/winterhill/whlog.txt
   echo
 fi
-cd /home/pi
+cd $HOME
 
 #echo "----------------------------------------------------"
 #echo "---- Set up to load the new spi driver at boot -----"
@@ -169,75 +169,75 @@ cd /home/pi
 #echo
 
 # A new sed line will be required here when the driver name is changed
-# sudo sed -i "/^exit 0/c\cd /home/pi/winterhill/whsource-3v20/whdriver-3v20\nsudo insmod whdriver-3v20.ko\nexit 0" /etc/rc.local
+# sudo sed -i "/^exit 0/c\cd $HOME/winterhill/whsource-3v20/whdriver-3v20\nsudo insmod whdriver-3v20.ko\nexit 0" /etc/rc.local
 
 echo "---------------------------------------------------"
 echo "---- Building the main WinterHill Application -----"
 echo "---------------------------------------------------"
 echo
-cd /home/pi/winterhill/whsource-3v20/whmain-3v20
+cd $HOME/winterhill/whsource-3v20/whmain-3v20
 make
 if [ $? != 0 ]; then
   echo "----------------------------------------------"
   echo "- Failed to build the WinterHill Application -"
   echo "----------------------------------------------"
-  echo UPDATE Failed to build the WinterHill Application >> /home/pi/winterhill/whlog.txt
+  echo UPDATE Failed to build the WinterHill Application >> $HOME/winterhill/whlog.txt
   exit
 fi
-cp winterhill-3v20 /home/pi/winterhill/RPi-3v20/winterhill-3v20
-cd /home/pi
+cp winterhill-3v20 $HOME/winterhill/RPi-3v20/winterhill-3v20
+cd $HOME
 
 echo "--------------------------------------"
 echo "---- Building the PIC Programmer -----"
 echo "--------------------------------------"
 echo
-cd /home/pi/winterhill/whsource-3v20/whpicprog-3v20
+cd $HOME/winterhill/whsource-3v20/whpicprog-3v20
 ./make.sh
 if [ $? != 0 ]; then
   echo "--------------------------------------"
   echo "- Failed to build the PIC Programmer -"
   echo "--------------------------------------"
-  echo UPDATE Failed to build the PIC Programmer >> /home/pi/winterhill/whlog.txt
+  echo UPDATE Failed to build the PIC Programmer >> $HOME/winterhill/whlog.txt
   exit
 fi
-cp whpicprog-3v20 /home/pi/winterhill/PIC-3v20/whpicprog-3v20
-cd /home/pi
+cp whpicprog-3v20 $HOME/winterhill/PIC-3v20/whpicprog-3v20
+cd $HOME
 
 # Any desktop shortcuts needing replacement will need deleting here
 
-# rm /home/pi/Desktop/WH_Local
-# rm /home/pi/Desktop/WH_Anyhub
-# rm /home/pi/Desktop/WH_Anywhere
-# rm /home/pi/Desktop/WH_Multihub
-# rm /home/pi/Desktop/PIC_Prog
+# rm $HOME/Desktop/WH_Local
+# rm $HOME/Desktop/WH_Anyhub
+# rm $HOME/Desktop/WH_Anywhere
+# rm $HOME/Desktop/WH_Multihub
+# rm $HOME/Desktop/PIC_Prog
 
 #echo "------------------------------------------------"
 #echo "---- Copy the new shortcuts to the desktop -----"
 #echo "------------------------------------------------"
 #echo
 
-#cp /home/pi/winterhill/configs/WH_Local     /home/pi/Desktop/WH_Local
-#cp /home/pi/winterhill/configs/WH_Anyhub    /home/pi/Desktop/WH_Anyhub
-#cp /home/pi/winterhill/configs/WH_Anywhere  /home/pi/Desktop/WH_Anywhere
-#cp /home/pi/winterhill/configs/WH_Multihub  /home/pi/Desktop/WH_Multihub
-#cp /home/pi/winterhill/configs/PIC_Prog     /home/pi/Desktop/PIC_Prog
+#cp $HOME/winterhill/configs/WH_Local     $HOME/Desktop/WH_Local
+#cp $HOME/winterhill/configs/WH_Anyhub    $HOME/Desktop/WH_Anyhub
+#cp $HOME/winterhill/configs/WH_Anywhere  $HOME/Desktop/WH_Anywhere
+#cp $HOME/winterhill/configs/WH_Multihub  $HOME/Desktop/WH_Multihub
+#cp $HOME/winterhill/configs/PIC_Prog     $HOME/Desktop/PIC_Prog
 
 # Note previous version number
-cp -f -r "$PATHUBACKUP"/prev_installed_version.txt /home/pi/winterhill//prev_installed_version.txt 
+cp -f -r "$PATHUBACKUP"/prev_installed_version.txt $HOME/winterhill//prev_installed_version.txt 
 
 # Restore the user .ini file
 cp -f -r "$PATHUBACKUP"/winterhill.ini "$PATHINI"/winterhill.ini
 
 # Update the version number
-cp -f -r /home/pi/winterhill/latest_version.txt /home/pi/winterhill/installed_version.txt
+cp -f -r $HOME/winterhill/latest_version.txt $HOME/winterhill/installed_version.txt
 
 # Save (overwrite) the git source used
-echo "${GIT_SRC}" > /home/pi/${GIT_SRC_FILE}
+echo "${GIT_SRC}" > $HOME/${GIT_SRC_FILE}
 
 echo "--------------------"
 echo "---- Rebooting -----"
 echo "--------------------"
-echo UPDATE Reached the end of the update script >> /home/pi/winterhill/whlog.txt
+echo UPDATE Reached the end of the update script >> $HOME/winterhill/whlog.txt
 
 sleep 1
 # Turn off swap to prevent reboot hang

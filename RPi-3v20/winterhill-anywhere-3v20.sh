@@ -2,32 +2,32 @@
 
 # Winterhill for a 1920 x 1080 screen
 #
-#	starts 4 VLC windows and positions them
-#	positions this window
-#	starts winterhill main application and positions it, passing the 4 xdotool window IDs
+#   starts 4 VLC windows and positions them
+#   positions this window
+#   starts winterhill main application and positions it, passing the 4 xdotool window IDs
 #
 # Usage: ./winterhill-anywhere-3v20.sh IPADDRESS IPPORT IPINTERFACEADDRESS
 
 
 trap trapit SIGINT
 trap trapit SIGTERM
-trap trapit	SIGHUP
+trap trapit SIGHUP
 
 trapit()
 {
-	finished=1
+  finished=1
 }
 
 # check for correct number of parameters
 
 if [ $# -ne 3 ]
 then
-	echo "This program requires 3 parameters"
-    echo ""
-    sleep 5s
-    exit  1
+  echo "This program requires 3 parameters"
+  echo ""
+  sleep 5s
+  exit  1
 fi
-                
+
 # get supplied parameters
 
 WINTERHILL="winterhill-3v20"
@@ -64,10 +64,10 @@ finished=0
 # start 4 VLC windows
 
 VLCOPTIONS="--qt-minimal-view --no-qt-video-autoresize --no-video-title-show --no-qt-system-tray"
-VLCCODEC="--codec ffmpeg" 
+VLCCODEC="--codec ffmpeg"
 
 vlc $VLCOPTIONS $VLCCODEC "udp://@"$IPADDRESS:$IPPORT1 &
-#vlc $VLCOPTIONS 		  "udp://@"$IPADDRESS:$IPPORT1 &
+#vlc $VLCOPTIONS           "udp://@"$IPADDRESS:$IPPORT1 &
 
 vlc $VLCOPTIONS           "udp://@"$IPADDRESS:$IPPORT2 &
 vlc $VLCOPTIONS           "udp://@"$IPADDRESS:$IPPORT3 &
@@ -78,63 +78,75 @@ vlc $VLCOPTIONS           "udp://@"$IPADDRESS:$IPPORT4 &
 status=""
 while [ "$status" = "" ]
 do
-    status=$(xdotool search --name $IPPORT1)
+  status=$(xdotool search --name $IPPORT1)
+  if [ "$status" != "" ]
+  then
     echo "<$status>"
-    sleep 0.1s
+  fi
+  sleep 0.1s
 done
 vlcwindow1=$status
 #xdotool windowmove --sync $vlcwindow1 $VLCLEFT13 $VLCTOP12 windowsize --sync $vlcwindow1 $VLCWIDTH $VLCHEIGHT set_window  --name "1: @$IPADDRESS:$IPPORT1 " $vlcwindow1
-xdotool windowfocus --sync $vlcwindow1 
-xdotool windowsize --sync $vlcwindow1 $VLCWIDTH $VLCHEIGHT 
-xdotool windowmove --sync $vlcwindow1 $VLCLEFT13 $VLCTOP12 
+xdotool windowfocus --sync $vlcwindow1
+xdotool windowsize --sync $vlcwindow1 $VLCWIDTH $VLCHEIGHT
+xdotool windowmove --sync $vlcwindow1 $VLCLEFT13 $VLCTOP12
 xdotool set_window  --name "1: @$IPADDRESS:$IPPORT1 " $vlcwindow1
-xdotool windowmove --sync $vlcwindow1 $VLCLEFT13 $(($VLCTOP12 + 2)) 
-# usually one of the windows fails to position correctly without the line above 
+xdotool windowmove --sync $vlcwindow1 $VLCLEFT13 $(($VLCTOP12 + 2))
+# usually one of the windows fails to position correctly without the line above
 
 status=""
 while [ "$status" = "" ]
 do
-    status=$(xdotool search --name $IPPORT2)
+  status=$(xdotool search --name $IPPORT2)
+  if [ "$status" != "" ]
+  then
     echo "<$status>"
-    sleep 0.1s
+  fi
+  sleep 0.1s
 done
 vlcwindow2=$status
 #xdotool windowmove --sync $vlcwindow2 $VLCLEFT24 $VLCTOP12 windowsize --sync $vlcwindow2 $VLCWIDTH $VLCHEIGHT set_window --name "2: @$IPADDRESS:$IPPORT2" $vlcwindow2
-xdotool windowfocus --sync $vlcwindow2 
-xdotool windowsize --sync $vlcwindow2 $VLCWIDTH $VLCHEIGHT 
-xdotool windowmove --sync $vlcwindow2 $VLCLEFT24 $VLCTOP12 
+xdotool windowfocus --sync $vlcwindow2
+xdotool windowsize --sync $vlcwindow2 $VLCWIDTH $VLCHEIGHT
+xdotool windowmove --sync $vlcwindow2 $VLCLEFT24 $VLCTOP12
 xdotool set_window --name "2: @$IPADDRESS:$IPPORT2" $vlcwindow2
-xdotool windowmove --sync $vlcwindow2 $VLCLEFT24 $(($VLCTOP12 + 2)) 
+xdotool windowmove --sync $vlcwindow2 $VLCLEFT24 $(($VLCTOP12 + 2))
 
 status=""
 while [ "$status" = "" ]
 do
-    status=$(xdotool search --name $IPPORT3)
+  status=$(xdotool search --name $IPPORT3)
+  if [ "$status" != "" ]
+  then
     echo "<$status>"
-    sleep 0.1s
+  fi
+  sleep 0.1s
 done
 vlcwindow3=$status
 #xdotool windowmove --sync $vlcwindow3 $VLCLEFT13 $VLCTOP34 windowsize --sync $vlcwindow3 $VLCWIDTH $VLCHEIGHT set_window --name "3: @$IPADDRESS:$IPPORT3" $vlcwindow3
-xdotool windowfocus --sync $vlcwindow3 
-xdotool windowsize --sync $vlcwindow3 $VLCWIDTH $VLCHEIGHT 
-xdotool windowmove --sync $vlcwindow3 $VLCLEFT13 $VLCTOP34 
+xdotool windowfocus --sync $vlcwindow3
+xdotool windowsize --sync $vlcwindow3 $VLCWIDTH $VLCHEIGHT
+xdotool windowmove --sync $vlcwindow3 $VLCLEFT13 $VLCTOP34
 xdotool set_window --name "3: @$IPADDRESS:$IPPORT3" $vlcwindow3
 xdotool windowmove --sync $vlcwindow3 $VLCLEFT13 $(($VLCTOP34 + 2))
 
 status=""
 while [ "$status" = "" ]
 do
-    status=$(xdotool search --name $IPPORT4)
+  status=$(xdotool search --name $IPPORT4)
+  if [ "$status" != "" ]
+  then
     echo "<$status>"
-    sleep 0.1s
+  fi
+  sleep 0.1s
 done
 vlcwindow4=$status
 #xdotool windowmove --sync $vlcwindow4 $VLCLEFT24 $VLCTOP34 windowsize --sync $vlcwindow4 $VLCWIDTH $VLCHEIGHT set_window --name "4: @$IPADDRESS:$IPPORT4" $vlcwindow4
 xdotool windowfocus --sync $vlcwindow4
-xdotool windowsize --sync $vlcwindow4 $VLCWIDTH $VLCHEIGHT 
-xdotool windowmove --sync $vlcwindow4 $VLCLEFT24 $VLCTOP34 
+xdotool windowsize --sync $vlcwindow4 $VLCWIDTH $VLCHEIGHT
+xdotool windowmove --sync $vlcwindow4 $VLCLEFT24 $VLCTOP34
 xdotool set_window --name "4: @$IPADDRESS:$IPPORT4" $vlcwindow4
-xdotool windowmove --sync $vlcwindow4 $VLCLEFT24 $(($VLCTOP34 + 2)) 
+xdotool windowmove --sync $vlcwindow4 $VLCLEFT24 $(($VLCTOP34 + 2))
 
 # start the main WinterHill application
 
@@ -147,26 +159,32 @@ sudo $command &
 status=""
 while [ "$status" = "" ]
 do
-    status=$(xdotool search --name $WINTERHILL)
+  status=$(xdotool search --name $WINTERHILL)
+  if [ "$status" != "" ]
+  then
     echo "<$status>"
-    sleep 0.1s
+  fi
+  sleep 0.1s
 done
 whwindow=$status
 xdotool windowmove --sync $whwindow 260 608
-xdotool windowsize --sync $whwindow 1500 175 
-xdotool set_window --name "$WINTERHILL $IPADDRESS $IPPORT $IPINTERFACEADDRESS" $whwindow 
+xdotool windowsize --sync $whwindow 1500 175
+xdotool set_window --name "$WINTERHILL $IPADDRESS $IPPORT $IPINTERFACEADDRESS" $whwindow
 
 # position this windows
 
 status=""
 while [ "$status" = "" ]
 do
-    sleep 0.1s
-    status=$(xdotool search --name $MYLAUNCH)
+  status=$(xdotool search --name $MYLAUNCH)
+  if [ "$status" != "" ]
+  then
     echo "<$status>"
+  fi
+  sleep 0.1s
 done
 whlaunchwindow=$status
-xdotool windowmove $whlaunchwindow 260 839 windowsize $whlaunchwindow 1500 130 
+xdotool windowmove $whlaunchwindow 260 839 windowsize $whlaunchwindow 1500 130
 
 # hide most of the whlaunch and winterhill windows
 
@@ -186,7 +204,7 @@ echo "**********"
 
 while [ $finished -eq 0 ]
 do
-	sleep 0.5s
+  sleep 0.5s
 done
 
 sudo killall winterhill

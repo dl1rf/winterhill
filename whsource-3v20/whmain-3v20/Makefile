@@ -1,19 +1,18 @@
 BIN = winterhill-3v20
 SRC = main.c rpi2c.c nim.c stv0910.c stv0910_utils.c stvvglna.c stvvglna_utils.c stv6120.c stv6120_utils.c web/web.c web/json.c
 OBJ = ${SRC:.c=.o}
-LDFLAGS = -lwebsockets
+LDFLAGS = -L/opt/vc/lib/ -lbcm_host -lwebsockets
 
-ifndef CC
 CC = gcc 
-endif
-COPT = -O3 -march=native -mtune=native -I/opt/vc/include/ -L/opt/vc/lib/ -lbcm_host
-#CFLAGS += -std=c99 -g -Wall -Wextra -Wpedantic -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE -DHOME_DIR=\"${HOME}\"
-#CFLAGS +=  -g -Wall -Wextra -Wpedantic -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE -DHOME_DIR=\"${HOME}\"
-CFLAGS +=  -g -Wall -Wextra -Wunused -DVERSION=\"${VER}\" -pthread -D_GNU_SOURCE -DHOME_DIR=\"${HOME}\"
+
+COPT = -O3 -march=native -mtune=native -I/opt/vc/include/
+CFLAGS = -std=c99 -Wall -pthread -fPIC -D_GNU_SOURCE -DHOME_DIR=\"${HOME}\"
+CFLAGS += -Wextra -Wunused
+#CFLAGS += -Wpedantic
 
 all: ${BIN} 
 
-debug: COPT = -Og 
+debug: COPT = -O0
 debug: CFLAGS += -ggdb -fno-omit-frame-pointer
 debug: all
 
@@ -22,11 +21,11 @@ werror: all
 
 $(BIN): ${OBJ}
 	@echo "  LD     "$@
-	@${CC} ${COPT} ${CFLAGS} -o $@ ${OBJ} ${LDFLAGS}
+	@${CC} -o $@ ${OBJ} ${COPT} ${CFLAGS} ${LDFLAGS}
 
 %.o: %.c *.h 
 	@echo "  CC     "$<
-	@${CC} ${COPT} ${CFLAGS} -c -fPIC -o $@ $<
+	@${CC} -c $< -o $@ ${COPT} ${CFLAGS}
 
 clean:
 	@rm -rf ${BIN} 

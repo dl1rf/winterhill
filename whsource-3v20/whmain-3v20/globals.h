@@ -27,13 +27,7 @@
 #include "stvvglna.h"
 #include "stvvglna_utils.h"
 
-typedef int						int32 ;
-typedef unsigned short			uint16 ;
-typedef unsigned int			uint32 ;
-typedef unsigned char			uint8 ;
-typedef int64_t					int64 ;
-
-extern uint32	GLOBALNIM ;
-extern bool		nimspresent		[5] ;
-extern bool		xlnaspresent	[5] ;
+extern uint32_t	GLOBALNIM ;
+extern bool		nimspresent[5] ;
+extern bool		xlnaspresent[5] ;
 

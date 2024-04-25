@@ -169,12 +169,12 @@ int callback_ws(struct lws *wsi, enum lws_callback_reasons reason, void *user, v
                     if(message_string[0] == 'F')
                     {
                         // F{rx},{freq},{SR},{offset}
-                        char *token, *str, *tofree;
+                        char *token, *str;
                         int count = 0;
 
                         uint32_t freq = 0, sr = 0, rx = 0, offset = 0;
 
-                        tofree = str = strdup(&message_string[1]);  
+                        str = strdup(&message_string[1]);  
 
                         while ((token = strsep(&str, ","))) 
                         {
@@ -260,24 +260,25 @@ static struct lws_protocols protocols[] = {
 /* default mount serves the URL space from ./mount-origin */
 
 static const struct lws_http_mount mount_opts = {
-    /* .mount_next */       NULL,        /* linked-list "next" */
-    /* .mountpoint */       "/",        /* mountpoint URL */
-    /* .origin */           HTDOCS_DIR,   /* serve from dir */
-    /* .def */              "index.html",   /* default filename */
-    /* .protocol */         NULL,
-    /* .cgienv */           NULL,
-    /* .extra_mimetypes */      NULL,
-    /* .interpret */        NULL,
-    /* .cgi_timeout */      0,
-    /* .cache_max_age */        0,
-    /* .auth_mask */        0,
-    /* .cache_reusable */       0,
-    /* .cache_revalidate */     0,
-    /* .cache_intermediaries */ 0,
-    /* .origin_protocol */      LWSMPRO_FILE,   /* files in a dir */
-    /* .mountpoint_len */       1,      /* char count */
+    /* .mount_next */               NULL,           /* linked-list "next" */
+    /* .mountpoint */               "/",            /* mountpoint URL */
+    /* .origin */                   HTDOCS_DIR,     /* serve from dir */
+    /* .def */                      "index.html",   /* default filename */
+    /* .protocol */                 NULL,
+    /* .cgienv */                   NULL,
+    /* .extra_mimetypes */          NULL,
+    /* .interpret */                NULL,
+    /* .cgi_timeout */              0,
+    /* .cache_max_age */            0,
+    /* .auth_mask */                0,
+    /* .cache_reusable */           0,
+    /* .cache_revalidate */         0,
+    /* .cache_intermediaries */     0,
+    /*                  */          0,
+    /* .origin_protocol */          LWSMPRO_FILE,   /* files in a dir */
+    /* .mountpoint_len */           1,              /* char count */
     /* .basic_auth_login_file */    NULL,
-    /* __dummy */ { 0 },
+//    /* __dummy */                   { 0 },
 };
 
 
@@ -343,7 +344,7 @@ void *ws_service(void *arg)
         lws_err = lws_service(context, 0);
         if(lws_err < 0)
         {
-            printf(stderr, "Web: lws_service() reported error: %d\n", lws_err);
+            fprintf(stderr, "Web: lws_service() reported error: %d\n", lws_err);
             *err = ERROR_WEB_LWS;
         }
     }
@@ -393,10 +394,8 @@ void *loop_web(void *arg)
     /* Create dedicated ws server thread */
     if(0 != pthread_create(&ws_service_thread, NULL, ws_service, (void *)thread_vars))
     {
-        printf(stderr, "Error creating web_lws pthread\n");
+        fprintf(stderr, "Error creating web_lws pthread\n");
     }
-
-    uint64_t last_status_sent_monotonic = 0;
 
     while (*err == ERROR_NONE )
     {
